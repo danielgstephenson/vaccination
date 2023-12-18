@@ -1,0 +1,44 @@
+body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+#loginDiv {
+  display: block;
+  text-align: center;
+  font: 5vmin monospace;
+  margin-top: 8vh;
+}
+#idInput {
+  font: 10vmin monospace;
+  text-align: center;
+}
+#joinButton{
+  font: 10vmin monospace;
+  text-align: center;
+}
+#waitDiv {
+  display: none;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  font: 5vmin monospace;
+  margin-top: 8vh;
+}
+#instructionsDiv {
+  display: none;
+  width: 80vw;
+  margin-top: 1vh;
+  margin-left: auto;
+  margin-right: auto;    
+  text-align: left;
+  font: 4vmin monospace; 
+}
+#interfaceDiv {
+  display: none;
+  margin-left: auto;
+  margin-right: auto;  
+  border: 0;
+  padding: 0;
+}
