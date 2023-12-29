@@ -1,12 +1,23 @@
 import express from 'express'
 import http from 'http'
+import https from 'https'
+import fs from 'fs-extra'
 import path from 'path'
 import { Server } from 'socket.io'
 import { fileURLToPath } from 'url'
 
-const app = express()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const configPath = path.join(__dirname, 'config.json')
+const fileExists = fs.existsSync(configPath)
+const config = fileExists ? fs.readJSONSync(configPath) : {}
+if (!fileExists) {
+  config.port = process.env.PORT ?? 3000
+  config.secure = false
+}
+console.log(config)
+
+const app = express()
 const staticPath = path.join(__dirname, 'public')
 const staticMiddleware = express.static(staticPath)
 app.use(staticMiddleware)
@@ -20,14 +31,24 @@ app.get('/socketIo/:fileName', function (req, res) {
   res.sendFile(filePath)
 })
 
-function start (onStart) {
-  const server = new http.Server(app)
+function makeServer () {
+  if (config.secure) {
+    const key = fs.readFileSync('./sis-key.pem')
+    const cert = fs.readFileSync('./sis-cert.pem')
+    const credentials = { key, cert }
+    return new https.Server(credentials, app)
+  } else {
+    return new http.Server(app)
+  }
+}
+
+function start (onListen) {
+  const server = makeServer()
   const io = new Server(server)
   io.path(staticPath)
-  const port = 3000
-  server.listen(port, () => {
-    console.log(`Listening on :${port}`)
-    if (onStart) onStart()
+  server.listen(config.port, () => {
+    console.log(`Listening on :${config.port}`)
+    if (onListen) onListen()
   })
   return io
 }
