@@ -1,0 +1,23 @@
+* {
+  font-size: 2.5vmin;
+}
+#connectingDiv {
+  display: block;
+}
+#interfaceDiv {
+  display: none;
+  flex-direction: row;
+  justify-content: left;
+  gap: 2vw;
+}
+#controlsDiv {
+  display: block;
+  line-height: 100%;
+}
+#subjectsGrid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  justify-content: center;
+  align-content: start;
+  gap: 1vw;
+}

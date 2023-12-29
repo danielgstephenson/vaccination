@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="manager.css">
+        <title>Manager</title>
+    </head>
+    <body>
+      <div id="connectingDiv">Connecting...</div>
+      <div id="interfaceDiv">
+          <div id="subjectsGrid"></div>
+          <div id="controlsDiv">
+              <label for="maxActiveInput">Max Active:</label>
+              <input id="maxActiveInput" type="text" size='3' value="12"><br><br>
+              <label for="instructionsCheckbox">Show Instructions</label>
+              <input id="instructionsCheckbox" type="checkbox"/><br><br>
+              <button id="assignTypesButton" type="button">Assign Types</button><br><br>
+              <button id="beginPracticeButton" type="button">Begin Practice</button><br><br>
+              <button id="beginExperimentButton" type="button">Begin Experiment</button><br><br>
+          </div>
+          <div id="infoDiv">0 Active</div>
+      </div>     
+      <script src="manager.js" type="module"></script>
+    </body>
+</html>

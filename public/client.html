@@ -1,21 +1,22 @@
 <html>
   <head>
-    <title>Experiment</title>
+    <title>Client</title>
     <link rel="stylesheet" href="client.css">
   </head>
   <body>
-    <div id="loginDiv">
-      <input type="number" id="idInput"> <br> <br>
-      <button type="button" id="joinButton">Login</button>
-    </div>
-    <div id="instructionsDiv">
-      Instructions
+    <div id="connectingDiv">Connecting...</div>
+    <div id="joinDiv">
+      <input type="text" id="idInput"> <br> <br>
+      <button type="button" id="joinButton">Join</button>
     </div>
     <div id="waitDiv">
       Please Wait
     </div>
+    <div id="instructionsDiv">
+      Instructions
+    </div>
     <div id="interfaceDiv">
-      Interface
+      <canvas id="canvas"></canvas>
     </div>
     <script src="client.js" type="module"></script>
   </body>

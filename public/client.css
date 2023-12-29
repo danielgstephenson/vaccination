@@ -3,8 +3,19 @@ body {
   margin: 0;
   padding: 0;
 }
-#loginDiv {
+canvas {
+  width: 100vw;
+  height: 100vh;
+  background: white;
+}
+#connectingDiv {
   display: block;
+  text-align: center;
+  font: 5vmin monospace;
+  margin-top: 8vh;
+}
+#joinDiv {
+  display: none;
   text-align: center;
   font: 5vmin monospace;
   margin-top: 8vh;
@@ -23,7 +34,7 @@ body {
   margin-left: auto;
   margin-right: auto;
   text-align: center;
-  font: 5vmin monospace;
+  font: 10vmin monospace;
   margin-top: 8vh;
 }
 #instructionsDiv {
