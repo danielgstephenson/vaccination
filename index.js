@@ -15,15 +15,15 @@ const choiceLength = 10
 const feedbackLength = 10
 const nPracticePeriods = 100
 const nPaidPeriods = 100
-const endowment = 15
-const R0 = 7
+const endowment = 10
+const R0 = 2.1129
 const cv = {
-  1: 5,
-  2: 5
+  1: 1,
+  2: 1
 }
 const cf = {
-  1: 8,
-  2: 15
+  1: 10,
+  2: 10
 }
 
 let state = 'instructions'
