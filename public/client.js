@@ -21,7 +21,7 @@ const colors = {
 }
 const graph = {
   bottom: -5,
-  width: 50,
+  width: 35,
   top: -48
 }
 
@@ -73,11 +73,11 @@ socket.on('serverUpdateClient', msg => {
 
 window.onmousedown = event => {
   console.log(msgRecord)
-  const meanV = (v + totalOtherV) / nActive
-  const risk = v === 1 || meanV === 1 ? 0 : Math.max(0, 1 - 1 / ((1 - meanV) * R0))
+  const meanV0 = totalOtherV / nActive
+  const risk0 = Math.max(0, 1 - 1 / ((1 - meanV0) * R0))
   console.log('totalOtherV', totalOtherV)
-  console.log('meanV', meanV)
-  console.log('risk', risk)
+  console.log('meanV0', meanV0)
+  console.log('risk0', risk0)
 }
 window.onmousemove = event => {
   const vmin = Math.min(window.innerWidth, window.innerHeight)
@@ -249,7 +249,7 @@ function drawLabels () {
   context.lineWidth = 0.4
   const width = 15
   const height = 10
-  const spread = 0.4 * graph.width
+  const spread = 16
   const top = graph.bottom
   const capHeightRatio = 0.72
   const y = top + 0.5 * height + 0.5 * capHeightRatio * textSize

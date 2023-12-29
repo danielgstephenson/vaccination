@@ -16,13 +16,13 @@ const feedbackLength = 10
 const nPracticePeriods = 100
 const nPaidPeriods = 100
 const endowment = 15
-const R0 = 4
+const R0 = 7
 const cv = {
   1: 5,
   2: 5
 }
 const cf = {
-  1: 12,
+  1: 8,
   2: 15
 }
 
