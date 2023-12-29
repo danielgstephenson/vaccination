@@ -11,8 +11,8 @@ function sum (a) { return a.reduce((x, y) => x + y, 0) }
 
 const subjects = {}
 const updateInterval = 0.1
-const choiceLength = 4
-const feedbackLength = 4
+const choiceLength = 10
+const feedbackLength = 10
 const nPracticePeriods = 100
 const nPaidPeriods = 100
 const endowment = 15
