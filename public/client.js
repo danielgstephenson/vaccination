@@ -17,7 +17,7 @@ const updateInterval = 0.1
 const mouse = { x: 0, y: 0 }
 const colors = {
   green: 'hsla(121, 100%, 23%, 1)',
-  grey: 'hsla(0, 0%, 60%, 1)'
+  grey: 'hsla(0, 0%, 75%, 1)'
 }
 const graph = {
   bottom: -5,
@@ -34,13 +34,11 @@ let showInstructions = false
 let state = 'instructions'
 let stage = 'choice'
 let countdown = 0
-let endowment = 20
-let R0 = 1
 let type = 1
-let cv = 1
-let cf = 1
-let nActive = 1
-let totalOtherV = 0
+let endowment = 10
+let pay0 = 0
+let pay1 = 0
+let payoff = 0
 let v = 0
 
 socket.on('connected', () => {
@@ -55,29 +53,22 @@ socket.on('joined', msg => {
   joined = true
 })
 socket.on('serverUpdateClient', msg => {
-  document.title = `C${id}`
+  document.title = `${id}`
   msgRecord = msg
   state = msg.state
   countdown = msg.countdown
   stage = msg.stage
-  nActive = msg.nActive
-  totalOtherV = msg.totalOtherV
   showInstructions = msg.showInstructions
-  endowment = msg.endowment
-  R0 = msg.R0
   type = msg.type
-  cv = msg.cv
-  cf = msg.cf
+  endowment = msg.endowment
   active = msg.active
+  pay0 = msg.pay0
+  pay1 = msg.pay1
+  payoff = msg.payoff
 })
 
 window.onmousedown = event => {
   console.log(msgRecord)
-  const meanV0 = totalOtherV / nActive
-  const risk0 = Math.max(0, 1 - 1 / ((1 - meanV0) * R0))
-  console.log('totalOtherV', totalOtherV)
-  console.log('meanV0', meanV0)
-  console.log('risk0', risk0)
 }
 window.onmousemove = event => {
   const vmin = Math.min(window.innerWidth, window.innerHeight)
@@ -101,14 +92,6 @@ function update () {
   if (stage === 'choice') v = mouse.x > 0 ? 1 : 0
   display()
   if (joined) updateServer()
-}
-
-function getPayoff (v) {
-  if (nActive === 0) return 0
-  const meanV = (v + totalOtherV) / nActive
-  const risk = v === 1 || meanV === 1 ? 0 : Math.max(0, 1 - 1 / ((1 - meanV) * R0))
-  const payoff = endowment - cv * v - cf * risk
-  return payoff
 }
 
 function display () {
@@ -168,13 +151,13 @@ function draw () {
 draw()
 
 function drawFeedbackText () {
-  const textSize = 0.4
+  const textSize = 0.10
   context.fillStyle = 'black'
   context.font = `${textSize}vmin Arial`
   context.textAlign = 'center'
   context.textBaseline = 'middle'
   const action = v === 0 ? 'A' : 'B'
-  const payoffNumber = getPayoff(v).toFixed(2)
+  const payoffNumber = payoff.toFixed(2)
   const completeText = 'This period is complete.'
   const actionText = `You selected action ${action}.`
   const payoffText = `Your payoff was $${payoffNumber}.`
@@ -188,7 +171,7 @@ function drawFeedbackText () {
 }
 
 function drawChoiceText () {
-  const textSize = 0.5
+  const textSize = 0.15
   context.fillStyle = 'black'
   context.font = `${textSize}vmin Arial`
   context.textAlign = 'center'
@@ -220,7 +203,7 @@ function drawGraph () {
   context.stroke()
   const ticklength = 1
   const nTicks = 5
-  const textSize = 0.25
+  const textSize = 0.07
   context.font = `${textSize}vmin Arial`
   context.beginPath()
   range(nTicks + 1).forEach(i => {
@@ -242,7 +225,7 @@ function drawGraph () {
 }
 
 function drawLabels () {
-  const textSize = 1
+  const textSize = 0.25
   context.font = `${textSize}vmin Arial`
   context.textAlign = 'center'
   context.textBaseline = 'middle'
@@ -252,7 +235,7 @@ function drawLabels () {
   const spread = 16
   const top = graph.bottom
   const capHeightRatio = 0.72
-  const y = top + 0.5 * height + 0.5 * capHeightRatio * textSize
+  const y = top + 0.5 * height + 4 * capHeightRatio * textSize
   const x0 = -0.5 * spread
   const x1 = +0.5 * spread
   const left0 = x0 - 0.5 * width
@@ -271,12 +254,12 @@ function drawLabels () {
   context.fillText('B', x1, y)
   if (stage === 'feedback') {
     const graphHeight = graph.bottom - graph.top
-    const fraction0 = getPayoff(0) / endowment
+    const fraction0 = pay0 / endowment
     const barHeight0 = graphHeight * fraction0
     const barTop0 = graph.bottom - barHeight0
     context.fillStyle = v === 0 ? colors.green : colors.grey
     context.fillRect(left0, barTop0, width, barHeight0)
-    const fraction1 = getPayoff(1) / endowment
+    const fraction1 = pay1 / endowment
     const barHeight1 = graphHeight * fraction1
     const barTop1 = graph.bottom - barHeight1
     context.fillStyle = v === 1 ? colors.green : colors.grey

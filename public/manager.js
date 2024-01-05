@@ -60,11 +60,89 @@ function update () {
 }
 
 function updateSubjectsGrid () {
+  subjectsGrid.innerHTML = ''
+  makeIdColumn()
+  makeTypeColumn()
+  makeVaccinateColumn()
+  makePay0Column()
+  makePay1Column()
+}
+
+function makeIdColumn () {
+  const div = document.createElement('div')
+  div.innerHTML = 'id'
+  div.style.gridRow = 1
+  div.style.gridColumn = 1
+  subjectsGrid.appendChild(div)
   Object.values(subjects).forEach(subject => {
     const div = document.createElement('div')
     div.innerHTML = subject.id
-    div.style.gridRow = subject.id
+    div.style.gridRow = subject.id + 1
     div.style.gridColumn = 1
+    div.style.opacity = subject.active ? 1 : 0.2
+    subjectsGrid.appendChild(div)
+  })
+}
+
+function makeTypeColumn () {
+  const div = document.createElement('div')
+  div.innerHTML = 't'
+  div.style.gridRow = 1
+  div.style.gridColumn = 2
+  subjectsGrid.appendChild(div)
+  Object.values(subjects).forEach(subject => {
+    const div = document.createElement('div')
+    div.innerHTML = subject.type
+    div.style.gridRow = subject.id + 1
+    div.style.gridColumn = 2
+    div.style.opacity = subject.active ? 1 : 0.2
+    subjectsGrid.appendChild(div)
+  })
+}
+
+function makeVaccinateColumn () {
+  const div = document.createElement('div')
+  div.innerHTML = 'v'
+  div.style.gridRow = 1
+  div.style.gridColumn = 3
+  subjectsGrid.appendChild(div)
+  Object.values(subjects).forEach(subject => {
+    const div = document.createElement('div')
+    div.innerHTML = subject.v
+    div.style.gridRow = subject.id + 1
+    div.style.gridColumn = 3
+    div.style.opacity = subject.active ? 1 : 0.2
+    subjectsGrid.appendChild(div)
+  })
+}
+
+function makePay0Column () {
+  const div = document.createElement('div')
+  div.innerHTML = 'p0'
+  div.style.gridRow = 1
+  div.style.gridColumn = 4
+  subjectsGrid.appendChild(div)
+  Object.values(subjects).forEach(subject => {
+    const div = document.createElement('div')
+    div.innerHTML = subject.pay0.toFixed(2)
+    div.style.gridRow = subject.id + 1
+    div.style.gridColumn = 4
+    div.style.opacity = subject.active ? 1 : 0.2
+    subjectsGrid.appendChild(div)
+  })
+}
+
+function makePay1Column () {
+  const div = document.createElement('div')
+  div.innerHTML = 'p1'
+  div.style.gridRow = 1
+  div.style.gridColumn = 5
+  subjectsGrid.appendChild(div)
+  Object.values(subjects).forEach(subject => {
+    const div = document.createElement('div')
+    div.innerHTML = subject.pay1.toFixed(2)
+    div.style.gridRow = subject.id + 1
+    div.style.gridColumn = 5
     div.style.opacity = subject.active ? 1 : 0.2
     subjectsGrid.appendChild(div)
   })
