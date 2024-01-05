@@ -61,89 +61,26 @@ function update () {
 
 function updateSubjectsGrid () {
   subjectsGrid.innerHTML = ''
-  makeIdColumn()
-  makeTypeColumn()
-  makeVaccinateColumn()
-  makePay0Column()
-  makePay1Column()
+  makeColumn(1, 'id', subject => subject.id)
+  makeColumn(2, 'type', subject => subject.type)
+  makeColumn(3, 'v', subject => subject.v)
+  makeColumn(4, 'pay0', subject => subject.pay0.toFixed(2))
+  makeColumn(5, 'pay1', subject => subject.pay1.toFixed(2))
 }
 
-function makeIdColumn () {
+function makeColumn (columnNumber, title, contentFunction) {
   const div = document.createElement('div')
-  div.innerHTML = 'id'
+  div.innerHTML = title
   div.style.gridRow = 1
-  div.style.gridColumn = 1
+  div.style.gridColumn = columnNumber
   subjectsGrid.appendChild(div)
   Object.values(subjects).forEach(subject => {
     const div = document.createElement('div')
-    div.innerHTML = subject.id
+    div.innerHTML = contentFunction(subject)
     div.style.gridRow = subject.id + 1
-    div.style.gridColumn = 1
+    div.style.gridColumn = columnNumber
     div.style.opacity = subject.active ? 1 : 0.2
-    subjectsGrid.appendChild(div)
-  })
-}
-
-function makeTypeColumn () {
-  const div = document.createElement('div')
-  div.innerHTML = 't'
-  div.style.gridRow = 1
-  div.style.gridColumn = 2
-  subjectsGrid.appendChild(div)
-  Object.values(subjects).forEach(subject => {
-    const div = document.createElement('div')
-    div.innerHTML = subject.type
-    div.style.gridRow = subject.id + 1
-    div.style.gridColumn = 2
-    div.style.opacity = subject.active ? 1 : 0.2
-    subjectsGrid.appendChild(div)
-  })
-}
-
-function makeVaccinateColumn () {
-  const div = document.createElement('div')
-  div.innerHTML = 'v'
-  div.style.gridRow = 1
-  div.style.gridColumn = 3
-  subjectsGrid.appendChild(div)
-  Object.values(subjects).forEach(subject => {
-    const div = document.createElement('div')
-    div.innerHTML = subject.v
-    div.style.gridRow = subject.id + 1
-    div.style.gridColumn = 3
-    div.style.opacity = subject.active ? 1 : 0.2
-    subjectsGrid.appendChild(div)
-  })
-}
-
-function makePay0Column () {
-  const div = document.createElement('div')
-  div.innerHTML = 'p0'
-  div.style.gridRow = 1
-  div.style.gridColumn = 4
-  subjectsGrid.appendChild(div)
-  Object.values(subjects).forEach(subject => {
-    const div = document.createElement('div')
-    div.innerHTML = subject.pay0.toFixed(2)
-    div.style.gridRow = subject.id + 1
-    div.style.gridColumn = 4
-    div.style.opacity = subject.active ? 1 : 0.2
-    subjectsGrid.appendChild(div)
-  })
-}
-
-function makePay1Column () {
-  const div = document.createElement('div')
-  div.innerHTML = 'p1'
-  div.style.gridRow = 1
-  div.style.gridColumn = 5
-  subjectsGrid.appendChild(div)
-  Object.values(subjects).forEach(subject => {
-    const div = document.createElement('div')
-    div.innerHTML = subject.pay1.toFixed(2)
-    div.style.gridRow = subject.id + 1
-    div.style.gridColumn = 5
-    div.style.opacity = subject.active ? 1 : 0.2
+    div.style.textAlign = 'right'
     subjectsGrid.appendChild(div)
   })
 }
