@@ -39,12 +39,21 @@ canvas {
 }
 #instructionsDiv {
   display: none;
-  width: 80vw;
+  width: 95vw;
   margin-top: 1vh;
   margin-left: auto;
   margin-right: auto;    
   text-align: left;
-  font: 4vmin monospace; 
+  font: 1.8vmin monospace; 
+}
+#quizDiv {
+  display: none;
+  width: 95vw;
+  margin-top: 1vh;
+  margin-left: auto;
+  margin-right: auto;    
+  text-align: left;
+  font: 1.8vmin monospace; 
 }
 #interfaceDiv {
   display: none;
@@ -52,4 +61,23 @@ canvas {
   margin-right: auto;  
   border: 0;
   padding: 0;
+}
+#submitQuizButton {
+  font: 2.5vmin monospace; 
+}
+#quizDialogParagraph {
+  margin-top: 0;
+}
+.quizQuestionDiv {
+  margin-bottom: 1.5vh;
+  margin-top: 1.5vh;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }

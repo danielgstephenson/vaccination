@@ -15,6 +15,37 @@
     <div id="instructionsDiv">
       Instructions
     </div>
+    <div id="quizDiv">
+      Please complete the following quiz to demonstrate your understanding of the instructions. <br>
+      <form id="quizForm">
+        <div class="quizQuestionDiv">
+          <label>1. Which of the following statments is correct?</label><br>
+          <input type="radio" name="question1" id="question1a">In each period, my type will change.</input><br>
+          <input type="radio" name="question1" id="question1b" required>In each period, my type will remain unchanged.</input><br>
+        </div>
+        <div class="quizQuestionDiv">
+          <label>2. How much would a type 1 participant earn if they select option A and a total of 2 others select option B?</label><br>
+          <input type="number" step=".01" name="question2" id="question2" required><br>
+        </div>
+        <div class="quizQuestionDiv">
+          <label>3. How much would a type 1 participant earn if they select option B and a total of 4 others select option B?</label><br>
+          <input type="number" step=".01" name="question3" id="question3" required><br>
+        </div>
+        <div class="quizQuestionDiv">
+          <label>4. How much would a type 2 participant earn if they select option A and a total of 6 others select option B?</label><br>
+          <input type="number" step=".01" name="question4" id="question4" required><br>
+        </div>
+        <div class="quizQuestionDiv">
+          <label>5. How much would a type 2 participant earn if they select option B and a total of 8 others select option B?</label><br>
+          <input type="number" step=".01" name="question5" id="question5" required><br>
+        </div>
+        <button type="submit" step=".01" value="submit" id="submitQuizButton">Submit</button>
+      </form>
+      <dialog id="quizDialog">
+        <p id="quizDialogParagraph"></p>
+        <button id="quizDialogButton" autofocus>OK</button>
+      </dialog>
+    </div>
     <div id="interfaceDiv">
       <canvas id="canvas"></canvas>
     </div>

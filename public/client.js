@@ -1,4 +1,6 @@
 import { io } from './socketIo/socket.io.esm.min.js'
+import { getInstructions1 } from './instructions.js'
+import { getPayoff } from './getPayoff.js'
 
 function range (n) { return [...Array(n).keys()] }
 
@@ -8,9 +10,48 @@ const idInput = document.getElementById('idInput')
 const joinButton = document.getElementById('joinButton')
 const instructionsDiv = document.getElementById('instructionsDiv')
 const waitDiv = document.getElementById('waitDiv')
+const quizForm = document.getElementById('quizForm')
 const interfaceDiv = document.getElementById('interfaceDiv')
 const canvas = document.getElementById('canvas')
 const context = canvas.getContext('2d')
+
+const quizDiv = document.getElementById('quizDiv')
+const quizDialog = document.getElementById('quizDialog')
+const quizDialogParagraph = document.getElementById('quizDialogParagraph')
+const quizDialogButton = document.getElementById('quizDialogButton')
+const question1a = document.getElementById('question1a')
+const question2 = document.getElementById('question2')
+const question3 = document.getElementById('question3')
+const question4 = document.getElementById('question4')
+const question5 = document.getElementById('question5')
+
+quizDialogButton.onclick = () => quizDialog.close()
+
+quizForm.onsubmit = (event) => {
+  const getRoundedPay = (type, v, totalOtherV) => {
+    const payoff = getPayoff(v, totalOtherV, n, cv[type], cd[type], endowment, R0)
+    return Number(payoff.toFixed(2))
+  }
+  event.preventDefault()
+  if (question1a.checked) {
+    quizDialogParagraph.innerHTML = 'Your answer to question 1 is wrong. Please correct it.'
+    quizDialog.showModal()
+  } else if (Number(question2.value) !== getRoundedPay(1, 0, 2)) {
+    quizDialogParagraph.innerHTML = 'Your answer to question 2 is wrong. Please correct it.'
+    quizDialog.showModal()
+  } else if (Number(question3.value) !== getRoundedPay(1, 1, 4)) {
+    quizDialogParagraph.innerHTML = 'Your answer to question 3 is wrong. Please correct it.'
+    quizDialog.showModal()
+  } else if (Number(question4.value) !== getRoundedPay(2, 0, 6)) {
+    quizDialogParagraph.innerHTML = 'Your answer to question 4 is wrong. Please correct it.'
+    quizDialog.showModal()
+  } else if (Number(question5.value) !== getRoundedPay(2, 1, 8)) {
+    quizDialogParagraph.innerHTML = 'Your answer to question 5 is wrong. Please correct it.'
+    quizDialog.showModal()
+  } else {
+    socket.emit('quizComplete', { id })
+  }
+}
 
 const socket = io()
 const updateInterval = 0.1
@@ -31,15 +72,20 @@ let connected = false
 let joined = false
 let active = false
 let showInstructions = false
+let quizComplete = false
 let state = 'instructions'
 let stage = 'choice'
 let countdown = 0
 let type = 1
-let endowment = 10
 let pay0 = 0
 let pay1 = 0
 let payoff = 0
 let v = 0
+let n = 10
+let cv = 0
+let cd = 0
+let endowment = 10
+let R0 = 1
 
 socket.on('connected', () => {
   console.log('connected')
@@ -59,12 +105,18 @@ socket.on('serverUpdateClient', msg => {
   countdown = msg.countdown
   stage = msg.stage
   showInstructions = msg.showInstructions
+  quizComplete = msg.quizComplete
   type = msg.type
-  endowment = msg.endowment
   active = msg.active
   pay0 = msg.pay0
   pay1 = msg.pay1
   payoff = msg.payoff
+  n = msg.n
+  cv = msg.cv
+  cd = msg.cd
+  endowment = msg.endowment
+  R0 = msg.R0
+  instructionsDiv.innerHTML = getInstructions1(n, cv, cd, endowment, R0)
 })
 
 window.onmousedown = event => {
@@ -99,6 +151,7 @@ function display () {
   joinDiv.style.display = 'none'
   waitDiv.style.display = 'none'
   instructionsDiv.style.display = 'none'
+  quizDiv.style.display = 'none'
   interfaceDiv.style.display = 'none'
   if (!connected) {
     connectingDiv.style.display = 'block'
@@ -113,8 +166,10 @@ function display () {
     return
   }
   if (state === 'instructions') {
-    if (showInstructions) instructionsDiv.style.display = 'block'
-    else waitDiv.style.display = 'block'
+    if (showInstructions) {
+      instructionsDiv.style.display = 'block'
+      if (!quizComplete) quizDiv.style.display = 'block'
+    } else waitDiv.style.display = 'block'
     return
   }
   if (state === 'interface') {
@@ -151,7 +206,7 @@ function draw () {
 draw()
 
 function drawFeedbackText () {
-  const textSize = 0.10
+  const textSize = 0.3
   context.fillStyle = 'black'
   context.font = `${textSize}vmin Arial`
   context.textAlign = 'center'
@@ -171,7 +226,7 @@ function drawFeedbackText () {
 }
 
 function drawChoiceText () {
-  const textSize = 0.15
+  const textSize = 0.3
   context.fillStyle = 'black'
   context.font = `${textSize}vmin Arial`
   context.textAlign = 'center'
@@ -203,7 +258,7 @@ function drawGraph () {
   context.stroke()
   const ticklength = 1
   const nTicks = 5
-  const textSize = 0.07
+  const textSize = 0.2
   context.font = `${textSize}vmin Arial`
   context.beginPath()
   range(nTicks + 1).forEach(i => {
@@ -225,7 +280,7 @@ function drawGraph () {
 }
 
 function drawLabels () {
-  const textSize = 0.25
+  const textSize = 1
   context.font = `${textSize}vmin Arial`
   context.textAlign = 'center'
   context.textBaseline = 'middle'
@@ -235,7 +290,7 @@ function drawLabels () {
   const spread = 16
   const top = graph.bottom
   const capHeightRatio = 0.72
-  const y = top + 0.5 * height + 4 * capHeightRatio * textSize
+  const y = top + 0.5 * height + capHeightRatio * textSize
   const x0 = -0.5 * spread
   const x1 = +0.5 * spread
   const left0 = x0 - 0.5 * width

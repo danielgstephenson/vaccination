@@ -1,4 +1,5 @@
 import server from './server.js'
+import { getPayoff } from './public/getPayoff.js'
 
 function range (n) { return [...Array(n).keys()] }
 function shuffled (a) {
@@ -15,16 +16,17 @@ const choiceLength = 10
 const feedbackLength = 10
 const nPracticePeriods = 100
 const nPaidPeriods = 100
-const endowment = 10
-const R0 = 1.5 // 2.1129
+const endowment = 6
+const R0 = 1.5 // 1.5 or 4
 const cv = {
   1: 1,
-  2: 1.5
+  2: 1
 }
 const cd = {
-  1: 10,
-  2: 10
+  1: 5,
+  2: 7
 }
+const n = 10
 
 let state = 'instructions'
 let period = 0
@@ -70,6 +72,9 @@ io.on('connection', socket => {
       beginPracticePeriods()
     }
   })
+  socket.on('quizComplete', msg => {
+    subjects[msg.id].quizComplete = true
+  })
   socket.on('clientUpdateServer', msg => {
     if (!subjects[msg.id]) createSubject(msg, socket)
     const subject = subjects[msg.id]
@@ -79,12 +84,17 @@ io.on('connection', socket => {
       countdown,
       stage,
       showInstructions,
-      endowment,
       type: subject.type,
       active: subject.active,
       pay0: subject.pay0,
       pay1: subject.pay1,
-      payoff: subject.payoff
+      payoff: subject.payoff,
+      quizComplete: subject.quizComplete,
+      n,
+      cv,
+      cd,
+      endowment,
+      R0
     }
     socket.emit('serverUpdateClient', reply)
   })
@@ -93,6 +103,7 @@ io.on('connection', socket => {
 function createSubject (msg) {
   const subject = {
     id: msg.id,
+    quizComplete: false,
     type: 1,
     v: 0,
     cv: 1,
@@ -129,29 +140,19 @@ function update () {
 
 function calculatePayoffs () {
   const activeSubjects = Object.values(subjects).filter(s => s.active)
-  const n = activeSubjects.length
-  if (n > 0) {
-    activeSubjects.forEach(subject => {
-      const otherSubjects = activeSubjects.filter(s => s.id !== subject.id)
-      const totalOtherV = sum(otherSubjects.map(s => s.v))
-      subject.pay0 = getPayoff(0, totalOtherV, n, cv[subject.type], cd[subject.type])
-      subject.pay1 = getPayoff(1, totalOtherV, n, cv[subject.type], cd[subject.type])
-      subject.payoff = getPayoff(subject.v, totalOtherV, n, cv[subject.type], cd[subject.type])
-      if (!practice) {
-        subject.hist[period] = {
-          payoff: subject.payoff,
-          v: subject.v
-        }
+  activeSubjects.forEach(subject => {
+    const otherSubjects = activeSubjects.filter(s => s.id !== subject.id)
+    const totalOtherV = sum(otherSubjects.map(s => s.v))
+    subject.pay0 = getPayoff(0, totalOtherV, n, cv[subject.type], cd[subject.type])
+    subject.pay1 = getPayoff(1, totalOtherV, n, cv[subject.type], cd[subject.type])
+    subject.payoff = getPayoff(subject.v, totalOtherV, n, cv[subject.type], cd[subject.type], endowment, R0)
+    if (!practice) {
+      subject.hist[period] = {
+        payoff: subject.payoff,
+        v: subject.v
       }
-    })
-  }
-}
-
-function getPayoff (v, totalOtherV, n, cv, cd) {
-  const meanV = (v + totalOtherV) / n
-  const risk = v === 1 || meanV === 1 ? 0 : Math.max(0, 1 - 1 / ((1 - meanV) * R0))
-  const payoff = endowment - cv * v - cd * risk
-  return payoff
+    }
+  })
 }
 
 function beginPracticePeriods () {

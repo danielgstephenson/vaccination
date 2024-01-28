@@ -19,5 +19,5 @@
   grid-template-columns: repeat(1, 1fr);
   justify-content: center;
   align-content: start;
-  gap: 1vw;
+  gap: 0.1vh 1vh;
 }
