@@ -1,9 +1,15 @@
 import server from './server.js'
-import { getPayoff } from './public/getPayoff.js'
+import fs from 'fs-extra'
+import { setTreatment, getPayoff, n, cv, getCD, getR0, payScale, endowment } from './public/getPayoff.js'
 
-function range (n) { return [...Array(n).keys()] }
+function range (a, b) {
+  return [...Array(b - a + 1).keys()].map(i => a + i)
+}
+function choose (array) {
+  return array[Math.floor(Math.random() * array.length)]
+}
 function shuffled (a) {
-  const indices = range(a.length)
+  const indices = range(0, a.length - 1)
   const randoms = indices.map(i => Math.random())
   indices.sort((i, j) => randoms[i] - randoms[j])
   return indices.map(i => a[i])
@@ -12,30 +18,25 @@ function sum (a) { return a.reduce((x, y) => x + y, 0) }
 
 const subjects = {}
 const updateInterval = 0.1
-const choiceLength = 10
-const feedbackLength = 10
-const nPracticePeriods = 100
-const nPaidPeriods = 100
-const endowment = 6
-const R0 = 1.5 // 1.5 or 4
-const cv = {
-  1: 1,
-  2: 1
-}
-const cd = {
-  1: 5,
-  2: 7
-}
-const n = 10
+const practiceChoiceLength = 10
+const practiceFeedbackLength = 10
+const dateString = getDateString()
+const choiceLength = 5
+const feedbackLength = 5
+const nPracticePeriods = 1
+const nPaidPeriods = 5 // 60
 
 let state = 'instructions'
 let period = 0
 let stage = 'wait'
+let practiceComplete = false
 let practice = true
-let maxActive = 12
 let countdown = 0
 let showInstructions = false
-let typesAssigned = false
+let treatment = '?'
+let dataStream
+
+createDataFile()
 
 const io = server.start(() => {
   setInterval(update, updateInterval * 1000)
@@ -43,20 +44,16 @@ const io = server.start(() => {
 io.on('connection', socket => {
   console.log('connection:', socket.id)
   socket.emit('connected', {})
-  socket.on('join', msg => {
-    if (!subjects[msg.id]) createSubject(msg, socket)
-    socket.emit('joined', {})
-  })
   socket.on('managerUpdateServer', msg => {
-    maxActive = msg.maxActive
-    showInstructions = msg.showInstructions
-    Object.values(subjects).forEach(subject => {
-      subject.active = subject.id <= maxActive
-    })
+    treatment = msg.treatment
+    setTreatment(treatment)
+    const typesAssigned = Object.values(subjects).every(s => s.type !== '?')
     const reply = {
       subjects,
       typesAssigned,
       practice,
+      practiceComplete,
+      showInstructions,
       state,
       period,
       stage,
@@ -67,36 +64,53 @@ io.on('connection', socket => {
   socket.on('assignTypes', () => {
     assignTypes()
   })
+  socket.on('showInstructions', () => {
+    showInstructions = true
+  })
+  socket.on('hideInstructions', () => {
+    showInstructions = false
+  })
   socket.on('beginPractice', () => {
+    const typesAssigned = Object.values(subjects).every(s => s.type !== '?')
     if (state === 'instructions' && typesAssigned) {
       beginPracticePeriods()
+    }
+  })
+  socket.on('beginPaidPeriods', () => {
+    console.log('beginPaidPeriods')
+    if (state === 'instructions' && practiceComplete) {
+      beginPaidPeriods()
     }
   })
   socket.on('quizComplete', msg => {
     subjects[msg.id].quizComplete = true
   })
-  socket.on('clientUpdateServer', msg => {
-    if (!subjects[msg.id]) createSubject(msg, socket)
-    const subject = subjects[msg.id]
-    subject.v = msg.v
-    const reply = {
-      state,
-      countdown,
-      stage,
-      showInstructions,
-      type: subject.type,
-      active: subject.active,
-      pay0: subject.pay0,
-      pay1: subject.pay1,
-      payoff: subject.payoff,
-      quizComplete: subject.quizComplete,
-      n,
-      cv,
-      cd,
-      endowment,
-      R0
+  socket.on('join', msg => {
+    if (isValidId(msg.id)) {
+      if (!subjects[msg.id]) createSubject(msg, socket)
+      socket.emit('joined', {})
     }
-    socket.emit('serverUpdateClient', reply)
+  })
+  socket.on('clientUpdateServer', msg => {
+    if (isValidId(msg.id)) {
+      if (!subjects[msg.id]) createSubject(msg, socket)
+      const subject = subjects[msg.id]
+      subject.v = msg.v
+      const reply = {
+        state,
+        countdown,
+        stage,
+        treatment,
+        showInstructions,
+        practiceComplete,
+        type: subject.type,
+        pay0: subject.pay0,
+        pay1: subject.pay1,
+        payoff: subject.payoff,
+        quizComplete: subject.quizComplete
+      }
+      socket.emit('serverUpdateClient', reply)
+    }
   })
 })
 
@@ -104,30 +118,89 @@ function createSubject (msg) {
   const subject = {
     id: msg.id,
     quizComplete: false,
-    type: 1,
+    type: '?',
     v: 0,
-    cv: 1,
-    cf: 1,
+    cv: 0,
+    cd: 0,
+    totalOtherV: 0,
     pay0: 0,
     pay1: 0,
     payoff: 0,
     hist: {},
-    earnings: 0,
-    active: msg.id <= maxActive
+    earnings: 0
   }
   subjects[msg.id] = subject
   console.log(`subject ${msg.id} joined`)
 }
 
-function assignTypes () {
-  const activeSubjects = Object.values(subjects).filter(s => s.active)
-  const shuffledSubjects = shuffled(activeSubjects)
-  shuffledSubjects.forEach((subject, i) => {
-    subject.type = subject.id <= 5 ? 1 : 2
-    subject.cv = cv[subject.type]
-    subject.cf = cd[subject.type]
+function createDataFile () {
+  dataStream = fs.createWriteStream(`data/${dateString}-data.csv`)
+  let csvString = 'session,treatment,period,id,type,v,payoff,pay0,pay1,cv,cd,totalOtherV,R0,endowment,payScale'
+  csvString += '\n'
+  dataStream.write(csvString)
+}
+function updateDataFile (subject) {
+  Object.values(subjects).forEach(subject => {
+    let csvString = ''
+    csvString += `${dateString},` // session
+    csvString += `${treatment},`
+    csvString += `${period},`
+    csvString += `${subject.id},`
+    csvString += `${subject.type},`
+    csvString += `${subject.v},`
+    csvString += `${subject.payoff},`
+    csvString += `${subject.pay0},`
+    csvString += `${subject.pay1},`
+    csvString += `${subject.cv},`
+    csvString += `${subject.cd},`
+    csvString += `${subject.totalOtherV},`
+    csvString += `${getR0()},`
+    csvString += `${endowment},`
+    csvString += `${payScale}`
+    csvString += '\n'
+    dataStream.write(csvString)
   })
-  typesAssigned = true
+}
+function writePaymentFile () {
+  let csvString = 'id,payment\n'
+  const randomPeriod = choose(range(1, nPaidPeriods))
+  console.log(`randomPeriod = ${randomPeriod}`)
+  Object.values(subjects).forEach(subject => {
+    csvString += `${subject.id},${subject.hist[randomPeriod].payoff.toFixed(2)}\n`
+  })
+  const logErr = (err) => { if (err) { console.log(err) } }
+  fs.writeFile('data/' + dateString + '-payment.csv', csvString, logErr)
+}
+
+function formatTwo (x) {
+  let y = x.toFixed(0)
+  if (y < 10) y = '0' + y
+  return y
+}
+function getDateString () {
+  const d = new Date()
+  const year = d.getFullYear()
+  const month = formatTwo(d.getMonth() + 1)
+  const day = formatTwo(d.getDate())
+  const hours = formatTwo(d.getHours())
+  const minutes = formatTwo(d.getMinutes())
+  const seconds = formatTwo(d.getSeconds())
+  const dateString = year + '-' + month + '-' + day + '-' + hours + minutes + seconds
+  return dateString
+}
+
+function isValidId (id) {
+  if (id < 1) return false
+  if (id > n) return false
+  if (id !== Math.round(id)) return false
+  return true
+}
+
+function assignTypes () {
+  const shuffledSubjects = shuffled(Object.values(subjects))
+  shuffledSubjects.forEach((subject, i) => {
+    subject.type = i + 1 <= 5 ? 1 : 2
+  })
 }
 
 function update () {
@@ -139,15 +212,18 @@ function update () {
 }
 
 function calculatePayoffs () {
-  const activeSubjects = Object.values(subjects).filter(s => s.active)
-  activeSubjects.forEach(subject => {
-    const otherSubjects = activeSubjects.filter(s => s.id !== subject.id)
-    const totalOtherV = sum(otherSubjects.map(s => s.v))
-    subject.pay0 = getPayoff(0, totalOtherV, n, cv[subject.type], cd[subject.type])
-    subject.pay1 = getPayoff(1, totalOtherV, n, cv[subject.type], cd[subject.type])
-    subject.payoff = getPayoff(subject.v, totalOtherV, n, cv[subject.type], cd[subject.type], endowment, R0)
+  Object.values(subjects).forEach(subject => {
+    const otherSubjects = Object.values(subjects).filter(s => s.id !== subject.id)
+    subject.totalOtherV = sum(otherSubjects.map(s => s.v))
+    subject.cv = cv[subject.type]
+    subject.cd = getCD()[subject.type]
+    subject.pay0 = getPayoff(subject.type, 0, subject.totalOtherV)
+    subject.pay1 = getPayoff(subject.type, 1, subject.totalOtherV)
+    subject.payoff = getPayoff(subject.type, subject.v, subject.totalOtherV)
     if (!practice) {
       subject.hist[period] = {
+        pay0: subject.pay0,
+        pay1: subject.pay1,
         payoff: subject.payoff,
         v: subject.v
       }
@@ -155,22 +231,15 @@ function calculatePayoffs () {
   })
 }
 
-function beginPracticePeriods () {
-  state = 'interface'
-  practice = true
-  stage = 'choice'
-  period = 1
-  countdown = choiceLength
-}
-
 function endStage () {
   if (stage === 'choice') {
     stage = 'feedback'
-    countdown = feedbackLength
+    countdown = practice ? practiceFeedbackLength : feedbackLength
     return
   }
   if (stage === 'feedback') {
     stage = 'choice'
+    if (!practice) updateDataFile()
     if (practice && period >= nPracticePeriods) {
       endPracticePeriods()
       return
@@ -179,19 +248,39 @@ function endStage () {
       endPaidPeriods()
       return
     }
-    countdown = choiceLength
+    countdown = practice ? practiceChoiceLength : choiceLength
     period += 1
   }
+}
+
+function beginPracticePeriods () {
+  state = 'interface'
+  practice = true
+  stage = 'choice'
+  period = 1
+  countdown = practiceChoiceLength
 }
 
 function endPracticePeriods () {
   state = 'instructions'
   stage = 'wait'
+  practiceComplete = true
   period = 0
+}
+
+function beginPaidPeriods () {
+  if (practiceComplete) {
+    state = 'interface'
+    practice = false
+    stage = 'choice'
+    period = 1
+    countdown = choiceLength
+  }
 }
 
 function endPaidPeriods () {
   state = 'complete'
   stage = 'wait'
   period = 0
+  writePaymentFile()
 }

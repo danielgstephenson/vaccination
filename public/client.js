@@ -1,16 +1,18 @@
 import { io } from './socketIo/socket.io.esm.min.js'
-import { getInstructions1 } from './instructions.js'
-import { getPayoff } from './getPayoff.js'
+import { getInstructions } from './instructions.js'
+import { getPayoff, setTreatment, n } from './getPayoff.js'
 
 function range (n) { return [...Array(n).keys()] }
 
 const connectingDiv = document.getElementById('connectingDiv')
+const waitDiv = document.getElementById('waitDiv')
 const joinDiv = document.getElementById('joinDiv')
 const idInput = document.getElementById('idInput')
 const joinButton = document.getElementById('joinButton')
 const instructionsDiv = document.getElementById('instructionsDiv')
-const waitDiv = document.getElementById('waitDiv')
 const quizForm = document.getElementById('quizForm')
+const practiceInfoDiv = document.getElementById('practiceInfoDiv')
+const paidInfoDiv = document.getElementById('paidInfoDiv')
 const interfaceDiv = document.getElementById('interfaceDiv')
 const canvas = document.getElementById('canvas')
 const context = canvas.getContext('2d')
@@ -28,24 +30,20 @@ const question5 = document.getElementById('question5')
 quizDialogButton.onclick = () => quizDialog.close()
 
 quizForm.onsubmit = (event) => {
-  const getRoundedPay = (type, v, totalOtherV) => {
-    const payoff = getPayoff(v, totalOtherV, n, cv[type], cd[type], endowment, R0)
-    return Number(payoff.toFixed(2))
-  }
   event.preventDefault()
   if (question1a.checked) {
     quizDialogParagraph.innerHTML = 'Your answer to question 1 is wrong. Please correct it.'
     quizDialog.showModal()
-  } else if (Number(question2.value) !== getRoundedPay(1, 0, 2)) {
+  } else if (Number(question2.value) !== Number(getPayoff(1, 0, 2))) {
     quizDialogParagraph.innerHTML = 'Your answer to question 2 is wrong. Please correct it.'
     quizDialog.showModal()
-  } else if (Number(question3.value) !== getRoundedPay(1, 1, 4)) {
+  } else if (Number(question3.value) !== Number(getPayoff(1, 1, 4))) {
     quizDialogParagraph.innerHTML = 'Your answer to question 3 is wrong. Please correct it.'
     quizDialog.showModal()
-  } else if (Number(question4.value) !== getRoundedPay(2, 0, 6)) {
+  } else if (Number(question4.value) !== Number(getPayoff(2, 0, 6))) {
     quizDialogParagraph.innerHTML = 'Your answer to question 4 is wrong. Please correct it.'
     quizDialog.showModal()
-  } else if (Number(question5.value) !== getRoundedPay(2, 1, 8)) {
+  } else if (Number(question5.value) !== Number(getPayoff(2, 1, 8))) {
     quizDialogParagraph.innerHTML = 'Your answer to question 5 is wrong. Please correct it.'
     quizDialog.showModal()
   } else {
@@ -65,14 +63,15 @@ const graph = {
   width: 35,
   top: -48
 }
+const maxPay = 18
 
 let msgRecord = {}
 let id = 0
 let connected = false
 let joined = false
-let active = false
 let showInstructions = false
 let quizComplete = false
+let practiceComplete = false
 let state = 'instructions'
 let stage = 'choice'
 let countdown = 0
@@ -81,11 +80,6 @@ let pay0 = 0
 let pay1 = 0
 let payoff = 0
 let v = 0
-let n = 10
-let cv = 0
-let cd = 0
-let endowment = 10
-let R0 = 1
 
 socket.on('connected', () => {
   console.log('connected')
@@ -106,17 +100,13 @@ socket.on('serverUpdateClient', msg => {
   stage = msg.stage
   showInstructions = msg.showInstructions
   quizComplete = msg.quizComplete
+  practiceComplete = msg.practiceComplete
   type = msg.type
-  active = msg.active
   pay0 = msg.pay0
   pay1 = msg.pay1
   payoff = msg.payoff
-  n = msg.n
-  cv = msg.cv
-  cd = msg.cd
-  endowment = msg.endowment
-  R0 = msg.R0
-  instructionsDiv.innerHTML = getInstructions1(n, cv, cd, endowment, R0)
+  instructionsDiv.innerHTML = getInstructions()
+  setTreatment(msg.treatment)
 })
 
 window.onmousedown = event => {
@@ -133,11 +123,20 @@ idInput.onkeydown = function (event) {
   if (event.key === 'Enter') join()
 }
 function join () {
-  id = Math.round(Number(idInput.value))
-  if (id > 0) {
+  id = Number(idInput.value)
+  if (isValidId(id)) {
     const msg = { id }
     socket.emit('join', msg)
+  } else {
+    window.alert(`ID must be a whole number from 1 to ${n}`)
   }
+}
+
+function isValidId (id) {
+  if (id < 1) return false
+  if (id > n) return false
+  if (id !== Math.round(id)) return false
+  return true
 }
 
 function update () {
@@ -152,6 +151,8 @@ function display () {
   waitDiv.style.display = 'none'
   instructionsDiv.style.display = 'none'
   quizDiv.style.display = 'none'
+  practiceInfoDiv.style.display = 'none'
+  paidInfoDiv.style.display = 'none'
   interfaceDiv.style.display = 'none'
   if (!connected) {
     connectingDiv.style.display = 'block'
@@ -161,14 +162,12 @@ function display () {
     joinDiv.style.display = 'block'
     return
   }
-  if (!active) {
-    waitDiv.style.display = 'block'
-    return
-  }
   if (state === 'instructions') {
     if (showInstructions) {
       instructionsDiv.style.display = 'block'
       if (!quizComplete) quizDiv.style.display = 'block'
+      else if (!practiceComplete) practiceInfoDiv.style.display = 'block'
+      else paidInfoDiv.style.display = 'block'
     } else waitDiv.style.display = 'block'
     return
   }
@@ -205,43 +204,45 @@ function draw () {
 }
 draw()
 
-function drawFeedbackText () {
-  const textSize = 0.3
+function drawChoiceText () {
+  const textSize = 0.4
   context.fillStyle = 'black'
   context.font = `${textSize}vmin Arial`
   context.textAlign = 'center'
   context.textBaseline = 'middle'
-  const action = v === 0 ? 'A' : 'B'
+  const option = v === 0 ? 'A' : 'B'
+  const countdownNumber = Math.ceil(countdown).toFixed(0)
+  const typeText = `You were assigned type ${type}.`
+  const promptText = 'Please select an option.'
+  const optionText = `You are have selected option ${option}.`
+  const unit = countdownNumber === '1' ? 'second' : 'seconds'
+  const countdownText = `This period will end in ${Math.ceil(countdown).toFixed(0)} ${unit}.`
+  context.fillText(typeText, 0, -15)
+  context.fillText(promptText, 0, -10)
+  context.fillText(optionText, 0, 10)
+  context.fillText(countdownText, 0, 15)
+}
+
+function drawFeedbackText () {
+  const textSize = 0.4
+  context.fillStyle = 'black'
+  context.font = `${textSize}vmin Arial`
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  const option = v === 0 ? 'A' : 'B'
   const payoffNumber = payoff.toFixed(2)
   const completeText = 'This period is complete.'
-  const actionText = `You selected action ${action}.`
+  const typeText = `You were assigned type ${type}.`
+  const optionText = `You selected option ${option}.`
   const payoffText = `Your payoff was $${payoffNumber}.`
   const countdownText = Math.ceil(countdown).toFixed(0)
   const unit = countdownText === '1' ? 'second' : 'seconds'
   const timeText = `The next period will begin in ${Math.ceil(countdown).toFixed(0)} ${unit}.`
   context.fillText(completeText, 0, 10)
-  context.fillText(actionText, 0, 15)
-  context.fillText(payoffText, 0, 20)
-  context.fillText(timeText, 0, 35)
-}
-
-function drawChoiceText () {
-  const textSize = 0.3
-  context.fillStyle = 'black'
-  context.font = `${textSize}vmin Arial`
-  context.textAlign = 'center'
-  context.textBaseline = 'middle'
-  const action = v === 0 ? 'A' : 'B'
-  const countdownNumber = Math.ceil(countdown).toFixed(0)
-  const typeText = `Your type is ${type}.`
-  const promptText = 'Please select an action.'
-  const actionText = `You are currently selecting action ${action}.`
-  const unit = countdownNumber === '1' ? 'second' : 'seconds'
-  const countdownText = `This period will end in ${Math.ceil(countdown).toFixed(0)} ${unit}.`
-  context.fillText(typeText, 0, -35)
-  context.fillText(promptText, 0, -25)
-  context.fillText(actionText, 0, -15)
-  context.fillText(countdownText, 0, 15)
+  context.fillText(typeText, 0, 15)
+  context.fillText(optionText, 0, 20)
+  context.fillText(payoffText, 0, 25)
+  context.fillText(timeText, 0, 30)
 }
 
 function drawGraph () {
@@ -249,6 +250,7 @@ function drawGraph () {
   context.strokeStyle = 'black'
   context.lineWidth = 0.4
   context.lineCap = 'round'
+  context.textBaseline = 'middle'
   const halfWidth = 0.5 * graph.width
   context.beginPath()
   context.moveTo(-halfWidth, graph.top)
@@ -263,7 +265,7 @@ function drawGraph () {
   context.beginPath()
   range(nTicks + 1).forEach(i => {
     const fraction = i / nTicks
-    const labelText = `$${(endowment * fraction).toFixed(2)}`
+    const labelText = `$${(maxPay * fraction).toFixed(2)}`
     const textX = halfWidth + ticklength + 1
     const graphHeight = graph.bottom - graph.top
     const y = graph.bottom - fraction * graphHeight
@@ -309,15 +311,21 @@ function drawLabels () {
   context.fillText('B', x1, y)
   if (stage === 'feedback') {
     const graphHeight = graph.bottom - graph.top
-    const fraction0 = pay0 / endowment
+    const fraction0 = pay0 / maxPay
     const barHeight0 = graphHeight * fraction0
     const barTop0 = graph.bottom - barHeight0
     context.fillStyle = v === 0 ? colors.green : colors.grey
     context.fillRect(left0, barTop0, width, barHeight0)
-    const fraction1 = pay1 / endowment
+    const fraction1 = pay1 / maxPay
     const barHeight1 = graphHeight * fraction1
     const barTop1 = graph.bottom - barHeight1
     context.fillStyle = v === 1 ? colors.green : colors.grey
     context.fillRect(left1, barTop1, width, barHeight1)
+    context.fillStyle = 'black'
+    context.font = '0.3vmin Arial'
+    context.textAlign = 'center'
+    context.textBaseline = 'bottom'
+    context.fillText(`$${pay0.toFixed(2)}`, x0, barTop0)
+    context.fillText(`$${pay1.toFixed(2)}`, x1, barTop1)
   }
 }

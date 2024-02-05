@@ -12,11 +12,26 @@
     <div id="waitDiv">
       Please Wait
     </div>
-    <div id="instructionsDiv">
+    <div id="instructionsDiv" class="instructionsDiv">
       Instructions
     </div>
+    <div id="practiceInfoDiv" class="instructionsDiv">
+      The following practice periods will not affect your earnings. During 
+      each period, you can select action A by moving your mouse to the left 
+      side of the screen and you can select action B by moving your mouse 
+      to the right side of the screen.
+    </div>
+    <div id="paidInfoDiv" class="instructionsDiv">
+      The practice periods are now complete. The paid periods 
+      are about to begin. At the end of the experiment, you 
+      will receive your payoff from one randomly selected paid period plus 
+      a $5 show up bonus in cash. If you have any questions, please raise 
+      your hand and someone will come to assist you.
+    </div>      
     <div id="quizDiv">
-      Please complete the following quiz to demonstrate your understanding of the instructions. <br>
+      These tables are also provided in the document on your desk.
+      If you have any questions, please raise your hand and someone will come to assist you.
+      Please complete the following quiz to demonstrate your understanding of the instructions.<br>
       <form id="quizForm">
         <div class="quizQuestionDiv">
           <label>1. Which of the following statments is correct?</label><br>
@@ -47,7 +62,7 @@
       </dialog>
     </div>
     <div id="interfaceDiv">
-      <canvas id="canvas"></canvas>
+      <canvas id="canvas"></canvas>      
     </div>
     <script src="client.js" type="module"></script>
   </body>

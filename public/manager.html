@@ -8,13 +8,19 @@
       <div id="interfaceDiv">
           <div id="subjectsGrid"></div>
           <div id="controlsDiv">
-              <label for="maxActiveInput">Max Active:</label>
-              <input id="maxActiveInput" type="text" size='3' value="10"><br><br>
-              <label for="instructionsCheckbox">Show Instructions</label>
-              <input id="instructionsCheckbox" type="checkbox"/><br><br>
-              <button id="assignTypesButton" type="button">Assign Types</button><br><br>
-              <button id="beginPracticeButton" type="button">Begin Practice</button><br><br>
-              <button id="beginExperimentButton" type="button">Begin Experiment</button><br><br>
+            <label for="treatment">Treatment:</label>
+            <select name="treatment" id="treatmentSelect">
+              <option value="?">?</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select><br><br>
+            <button id="assignTypesButton" type="button">Assign Types</button><br><br>
+            <button id="showInstructionsButton" type="button">Show Instructions</button><br><br>
+            <button id="hideInstructionsButton" type="button">Hide Instructions</button><br><br>
+            <button id="beginPracticeButton" type="button">Begin Practice</button><br><br>
+            <button id="beginPaidPeriodsButton" type="button">Begin Paid Periods</button><br><br>
           </div>
           <div id="infoDiv">0 Active</div>
       </div>     

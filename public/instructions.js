@@ -1,35 +1,33 @@
-import { getPayoff } from './getPayoff.js'
+import { getPayString } from './getPayoff.js'
 
 const welcomeText = 'Welcome! Thank you for coming to today’s experiment. This is an experiment in the economics of decision-making. The instructions are simple, and if you follow them carefully and make good decisions, you may earn a considerable amount of money that will be paid to you in cash at the end of the session. Your earnings will be determined partly by your decisions, partly by the decisions of others, and partly by chance. <br><br>'
 
-function getInfo (n, cv, cd, endowment, R0) {
-  const table1 = getTable(1, n, cv, cd, endowment, R0)
-  const table2 = getTable(2, n, cv, cd, endowment, R0)
-  const info = `
-  At the beginning of this experiment, five of the ten participants will be randomly assigned type 1 and the other five will be assigned type 2. Your type will remain unchanged for the rest of the experiment. This experiment will consist of several identical periods. During each period you will be shown your type and you will select one of two options: A or B. At the end of each period, your payoff will depend on your type, the choice you made, and the choices made by others. <br><br>
+const periodInfo = `
+At the beginning of this experiment, five of the ten participants will be randomly assigned type 1 and the other five will be assigned type 2. Your type will remain unchanged for the rest of the experiment. This experiment will consist of several identical periods. During each period you will be shown your type and you will select one of two options: A or B. At the end of each period, your payoff will depend on your type, the choice you made, and the choices made by others as shown in the following tables. <br><br>`
 
+export function getTableText () {
+  const table1 = getTable(1)
+  const table2 = getTable(2)
+  const tableText = `
   If you are assigned type 1, your payoff will be given by the following table:
   ${table1} <br>
 
   If you are assigned type 2, your payoff will be given by the following table:
   ${table2} <br>`
-  return info
+  return tableText
 }
 
-export function getInstructions1 (n, cv, cd, endowment, R0) {
-  const instructions1 = welcomeText + getInfo(n, cv, cd, endowment, R0)
-  return instructions1
+export function getInstructions (quizComplete, practiceComplete) {
+  const instructions = welcomeText + periodInfo + getTableText()
+  return instructions
 }
 
-function getTable (type, n, cv, cd, endowment, R0) {
-  const getPayString = (v, totalOtherV) => {
-    const payoff = getPayoff(v, totalOtherV, n, cv[type], cd[type], endowment, R0)
-    return payoff.toFixed(2)
-  }
+function getTable (type, align) {
   const divStyle = `
-    margin-top: 0.5vh;
-  `
+    display: inline-block
+    margin-top: 0.5vh;`
   const tableStyle = `
+    display: inline-table;
     font-size: 1.8vmin; 
     border-collapse: collapse`
   const trStyle = ''
@@ -58,29 +56,29 @@ function getTable (type, n, cv, cd, endowment, R0) {
       </tr>
       <tr style="${trStyle}">
         <td style="${tdStyleLeft}">Your Payoff From Option A</td>
-        <td style="${tdStyle}">${getPayString(0, 0)}</td>
-        <td style="${tdStyle}">${getPayString(0, 1)}</td>
-        <td style="${tdStyle}">${getPayString(0, 2)}</td>
-        <td style="${tdStyle}">${getPayString(0, 3)}</td>
-        <td style="${tdStyle}">${getPayString(0, 4)}</td>
-        <td style="${tdStyle}">${getPayString(0, 5)}</td>
-        <td style="${tdStyle}">${getPayString(0, 6)}</td>
-        <td style="${tdStyle}">${getPayString(0, 7)}</td>
-        <td style="${tdStyle}">${getPayString(0, 8)}</td>
-        <td style="${tdStyle}">${getPayString(0, 9)}</td>
+        <td style="${tdStyle}">${getPayString(type, 0, 0)}</td>
+        <td style="${tdStyle}">${getPayString(type, 0, 1)}</td>
+        <td style="${tdStyle}">${getPayString(type, 0, 2)}</td>
+        <td style="${tdStyle}">${getPayString(type, 0, 3)}</td>
+        <td style="${tdStyle}">${getPayString(type, 0, 4)}</td>
+        <td style="${tdStyle}">${getPayString(type, 0, 5)}</td>
+        <td style="${tdStyle}">${getPayString(type, 0, 6)}</td>
+        <td style="${tdStyle}">${getPayString(type, 0, 7)}</td>
+        <td style="${tdStyle}">${getPayString(type, 0, 8)}</td>
+        <td style="${tdStyle}">${getPayString(type, 0, 9)}</td>
       </tr>
       <tr style="${trStyle}">
         <td style="${tdStyleLeft}">Your Payoff From Option B</td>
-        <td style="${tdStyle}">${getPayString(1, 0)}</td>
-        <td style="${tdStyle}">${getPayString(1, 1)}</td>
-        <td style="${tdStyle}">${getPayString(1, 2)}</td>
-        <td style="${tdStyle}">${getPayString(1, 3)}</td>
-        <td style="${tdStyle}">${getPayString(1, 4)}</td>
-        <td style="${tdStyle}">${getPayString(1, 5)}</td>
-        <td style="${tdStyle}">${getPayString(1, 6)}</td>
-        <td style="${tdStyle}">${getPayString(1, 7)}</td>
-        <td style="${tdStyle}">${getPayString(1, 8)}</td>
-        <td style="${tdStyle}">${getPayString(1, 9)}</td>
+        <td style="${tdStyle}">${getPayString(type, 1, 0)}</td>
+        <td style="${tdStyle}">${getPayString(type, 1, 1)}</td>
+        <td style="${tdStyle}">${getPayString(type, 1, 2)}</td>
+        <td style="${tdStyle}">${getPayString(type, 1, 3)}</td>
+        <td style="${tdStyle}">${getPayString(type, 1, 4)}</td>
+        <td style="${tdStyle}">${getPayString(type, 1, 5)}</td>
+        <td style="${tdStyle}">${getPayString(type, 1, 6)}</td>
+        <td style="${tdStyle}">${getPayString(type, 1, 7)}</td>
+        <td style="${tdStyle}">${getPayString(type, 1, 8)}</td>
+        <td style="${tdStyle}">${getPayString(type, 1, 9)}</td>
       </tr>
     </table>
   </div>`
