@@ -10,13 +10,13 @@ const joinDiv = document.getElementById('joinDiv')
 const idInput = document.getElementById('idInput')
 const joinButton = document.getElementById('joinButton')
 const instructionsDiv = document.getElementById('instructionsDiv')
-const quizForm = document.getElementById('quizForm')
 const practiceInfoDiv = document.getElementById('practiceInfoDiv')
 const paidInfoDiv = document.getElementById('paidInfoDiv')
 const interfaceDiv = document.getElementById('interfaceDiv')
+const completeDiv = document.getElementById('completeDiv')
 const canvas = document.getElementById('canvas')
 const context = canvas.getContext('2d')
-
+const quizForm = document.getElementById('quizForm')
 const quizDiv = document.getElementById('quizDiv')
 const quizDialog = document.getElementById('quizDialog')
 const quizDialogParagraph = document.getElementById('quizDialogParagraph')
@@ -26,30 +26,6 @@ const question2 = document.getElementById('question2')
 const question3 = document.getElementById('question3')
 const question4 = document.getElementById('question4')
 const question5 = document.getElementById('question5')
-
-quizDialogButton.onclick = () => quizDialog.close()
-
-quizForm.onsubmit = (event) => {
-  event.preventDefault()
-  if (question1a.checked) {
-    quizDialogParagraph.innerHTML = 'Your answer to question 1 is wrong. Please correct it.'
-    quizDialog.showModal()
-  } else if (Number(question2.value) !== Number(getPayoff(1, 0, 2))) {
-    quizDialogParagraph.innerHTML = 'Your answer to question 2 is wrong. Please correct it.'
-    quizDialog.showModal()
-  } else if (Number(question3.value) !== Number(getPayoff(1, 1, 4))) {
-    quizDialogParagraph.innerHTML = 'Your answer to question 3 is wrong. Please correct it.'
-    quizDialog.showModal()
-  } else if (Number(question4.value) !== Number(getPayoff(2, 0, 6))) {
-    quizDialogParagraph.innerHTML = 'Your answer to question 4 is wrong. Please correct it.'
-    quizDialog.showModal()
-  } else if (Number(question5.value) !== Number(getPayoff(2, 1, 8))) {
-    quizDialogParagraph.innerHTML = 'Your answer to question 5 is wrong. Please correct it.'
-    quizDialog.showModal()
-  } else {
-    socket.emit('quizComplete', { id })
-  }
-}
 
 const socket = io()
 const updateInterval = 0.1
@@ -132,6 +108,30 @@ function join () {
   }
 }
 
+quizDialogButton.onclick = () => quizDialog.close()
+
+quizForm.onsubmit = (event) => {
+  event.preventDefault()
+  if (question1a.checked) {
+    quizDialogParagraph.innerHTML = 'Your answer to question 1 is wrong. Please correct it.'
+    quizDialog.showModal()
+  } else if (Number(question2.value) !== Number(getPayoff(1, 0, 2))) {
+    quizDialogParagraph.innerHTML = 'Your answer to question 2 is wrong. Please correct it.'
+    quizDialog.showModal()
+  } else if (Number(question3.value) !== Number(getPayoff(1, 1, 4))) {
+    quizDialogParagraph.innerHTML = 'Your answer to question 3 is wrong. Please correct it.'
+    quizDialog.showModal()
+  } else if (Number(question4.value) !== Number(getPayoff(2, 0, 6))) {
+    quizDialogParagraph.innerHTML = 'Your answer to question 4 is wrong. Please correct it.'
+    quizDialog.showModal()
+  } else if (Number(question5.value) !== Number(getPayoff(2, 1, 8))) {
+    quizDialogParagraph.innerHTML = 'Your answer to question 5 is wrong. Please correct it.'
+    quizDialog.showModal()
+  } else {
+    socket.emit('quizComplete', { id })
+  }
+}
+
 function isValidId (id) {
   if (id < 1) return false
   if (id > n) return false
@@ -154,6 +154,7 @@ function display () {
   practiceInfoDiv.style.display = 'none'
   paidInfoDiv.style.display = 'none'
   interfaceDiv.style.display = 'none'
+  completeDiv.style.display = 'none'
   if (!connected) {
     connectingDiv.style.display = 'block'
     return
@@ -173,6 +174,9 @@ function display () {
   }
   if (state === 'interface') {
     interfaceDiv.style.display = 'block'
+  }
+  if (state === 'complete') {
+    completeDiv.style.display = 'block'
   }
 }
 
@@ -214,13 +218,13 @@ function drawChoiceText () {
   const countdownNumber = Math.ceil(countdown).toFixed(0)
   const typeText = `You were assigned type ${type}.`
   const promptText = 'Please select an option.'
-  const optionText = `You are have selected option ${option}.`
+  const optionText = `You selected option ${option}.`
   const unit = countdownNumber === '1' ? 'second' : 'seconds'
   const countdownText = `This period will end in ${Math.ceil(countdown).toFixed(0)} ${unit}.`
-  context.fillText(typeText, 0, -15)
-  context.fillText(promptText, 0, -10)
-  context.fillText(optionText, 0, 10)
-  context.fillText(countdownText, 0, 15)
+  context.fillText(typeText, 0, -25)
+  context.fillText(promptText, 0, -15)
+  context.fillText(optionText, 0, 15)
+  context.fillText(countdownText, 0, 25)
 }
 
 function drawFeedbackText () {
@@ -232,17 +236,15 @@ function drawFeedbackText () {
   const option = v === 0 ? 'A' : 'B'
   const payoffNumber = payoff.toFixed(2)
   const completeText = 'This period is complete.'
-  const typeText = `You were assigned type ${type}.`
   const optionText = `You selected option ${option}.`
   const payoffText = `Your payoff was $${payoffNumber}.`
   const countdownText = Math.ceil(countdown).toFixed(0)
   const unit = countdownText === '1' ? 'second' : 'seconds'
   const timeText = `The next period will begin in ${Math.ceil(countdown).toFixed(0)} ${unit}.`
   context.fillText(completeText, 0, 10)
-  context.fillText(typeText, 0, 15)
-  context.fillText(optionText, 0, 20)
-  context.fillText(payoffText, 0, 25)
-  context.fillText(timeText, 0, 30)
+  context.fillText(optionText, 0, 15)
+  context.fillText(payoffText, 0, 20)
+  context.fillText(timeText, 0, 25)
 }
 
 function drawGraph () {

@@ -25,10 +25,11 @@ export function getInstructions (quizComplete, practiceComplete) {
 function getTable (type, align) {
   const divStyle = `
     display: inline-block
-    margin-top: 0.5vh;`
+    margin: 10vh;
+    padding-top: 1vmin`
   const tableStyle = `
     display: inline-table;
-    font-size: 1.8vmin; 
+    font-size: 2vmin; 
     border-collapse: collapse`
   const trStyle = ''
   const trStyleTop = trStyle + 'background-color: #AADDDD;'

@@ -24,7 +24,7 @@ const dateString = getDateString()
 const choiceLength = 5
 const feedbackLength = 5
 const nPracticePeriods = 1
-const nPaidPeriods = 5 // 60
+const nPaidPeriods = 1 // 60
 
 let state = 'instructions'
 let period = 0
@@ -133,69 +133,6 @@ function createSubject (msg) {
   console.log(`subject ${msg.id} joined`)
 }
 
-function createDataFile () {
-  dataStream = fs.createWriteStream(`data/${dateString}-data.csv`)
-  let csvString = 'session,treatment,period,id,type,v,payoff,pay0,pay1,cv,cd,totalOtherV,R0,endowment,payScale'
-  csvString += '\n'
-  dataStream.write(csvString)
-}
-function updateDataFile (subject) {
-  Object.values(subjects).forEach(subject => {
-    let csvString = ''
-    csvString += `${dateString},` // session
-    csvString += `${treatment},`
-    csvString += `${period},`
-    csvString += `${subject.id},`
-    csvString += `${subject.type},`
-    csvString += `${subject.v},`
-    csvString += `${subject.payoff},`
-    csvString += `${subject.pay0},`
-    csvString += `${subject.pay1},`
-    csvString += `${subject.cv},`
-    csvString += `${subject.cd},`
-    csvString += `${subject.totalOtherV},`
-    csvString += `${getR0()},`
-    csvString += `${endowment},`
-    csvString += `${payScale}`
-    csvString += '\n'
-    dataStream.write(csvString)
-  })
-}
-function writePaymentFile () {
-  let csvString = 'id,payment\n'
-  const randomPeriod = choose(range(1, nPaidPeriods))
-  console.log(`randomPeriod = ${randomPeriod}`)
-  Object.values(subjects).forEach(subject => {
-    csvString += `${subject.id},${subject.hist[randomPeriod].payoff.toFixed(2)}\n`
-  })
-  const logErr = (err) => { if (err) { console.log(err) } }
-  fs.writeFile('data/' + dateString + '-payment.csv', csvString, logErr)
-}
-
-function formatTwo (x) {
-  let y = x.toFixed(0)
-  if (y < 10) y = '0' + y
-  return y
-}
-function getDateString () {
-  const d = new Date()
-  const year = d.getFullYear()
-  const month = formatTwo(d.getMonth() + 1)
-  const day = formatTwo(d.getDate())
-  const hours = formatTwo(d.getHours())
-  const minutes = formatTwo(d.getMinutes())
-  const seconds = formatTwo(d.getSeconds())
-  const dateString = year + '-' + month + '-' + day + '-' + hours + minutes + seconds
-  return dateString
-}
-
-function isValidId (id) {
-  if (id < 1) return false
-  if (id > n) return false
-  if (id !== Math.round(id)) return false
-  return true
-}
-
 function assignTypes () {
   const shuffledSubjects = shuffled(Object.values(subjects))
   shuffledSubjects.forEach((subject, i) => {
@@ -283,4 +220,69 @@ function endPaidPeriods () {
   stage = 'wait'
   period = 0
   writePaymentFile()
+}
+
+function isValidId (id) {
+  if (id < 1) return false
+  if (id > n) return false
+  if (id !== Math.round(id)) return false
+  return true
+}
+
+function createDataFile () {
+  dataStream = fs.createWriteStream(`data/${dateString}-data.csv`)
+  let csvString = 'session,treatment,period,id,type,v,payoff,pay0,pay1,cv,cd,totalOtherV,R0,endowment,payScale'
+  csvString += '\n'
+  dataStream.write(csvString)
+}
+
+function updateDataFile (subject) {
+  Object.values(subjects).forEach(subject => {
+    let csvString = ''
+    csvString += `${dateString},` // session
+    csvString += `${treatment},`
+    csvString += `${period},`
+    csvString += `${subject.id},`
+    csvString += `${subject.type},`
+    csvString += `${subject.v},`
+    csvString += `${subject.payoff},`
+    csvString += `${subject.pay0},`
+    csvString += `${subject.pay1},`
+    csvString += `${subject.cv},`
+    csvString += `${subject.cd},`
+    csvString += `${subject.totalOtherV},`
+    csvString += `${getR0()},`
+    csvString += `${endowment},`
+    csvString += `${payScale}`
+    csvString += '\n'
+    dataStream.write(csvString)
+  })
+}
+
+function writePaymentFile () {
+  let csvString = 'id,payment\n'
+  const randomPeriod = choose(range(1, nPaidPeriods))
+  console.log(`randomPeriod = ${randomPeriod}`)
+  Object.values(subjects).forEach(subject => {
+    csvString += `${subject.id},${subject.hist[randomPeriod].payoff.toFixed(2)}\n`
+  })
+  const logErr = (err) => { if (err) { console.log(err) } }
+  fs.writeFile('data/' + dateString + '-payment.csv', csvString, logErr)
+}
+
+function formatTwo (x) {
+  let y = x.toFixed(0)
+  if (y < 10) y = '0' + y
+  return y
+}
+function getDateString () {
+  const d = new Date()
+  const year = d.getFullYear()
+  const month = formatTwo(d.getMonth() + 1)
+  const day = formatTwo(d.getDate())
+  const hours = formatTwo(d.getHours())
+  const minutes = formatTwo(d.getMinutes())
+  const seconds = formatTwo(d.getSeconds())
+  const dateString = year + '-' + month + '-' + day + '-' + hours + minutes + seconds
+  return dateString
 }

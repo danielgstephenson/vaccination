@@ -11,21 +11,21 @@ canvas {
 #connectingDiv {
   display: block;
   text-align: center;
-  font: 5vmin monospace;
+  font: 5vmin Arial;
   margin-top: 8vh;
 }
 #joinDiv {
   display: none;
   text-align: center;
-  font: 5vmin monospace;
+  font: 5vmin Arial;
   margin-top: 8vh;
 }
 #idInput {
-  font: 10vmin monospace;
+  font: 10vmin Arial;
   text-align: center;
 }
 #joinButton{
-  font: 10vmin monospace;
+  font: 10vmin Arial;
   text-align: center;
 }
 #waitDiv {
@@ -34,26 +34,26 @@ canvas {
   margin-left: auto;
   margin-right: auto;
   text-align: center;
-  font: 10vmin monospace;
+  font: 10vmin Arial;
   margin-top: 8vh;
 }
 .instructionsDiv {
   display: none;
-  width: 95vw;
-  margin-top: 1vh;
+  width: 90vw;
+  margin-top: 3vh;
   margin-left: auto;
   margin-right: auto;    
   text-align: left;
-  font: 1.8vmin monospace; 
+  font: 2vmin Arial; 
 }
 #quizDiv {
   display: none;
-  width: 95vw;
+  width: 90vw;
   margin-top: 1vh;
   margin-left: auto;
   margin-right: auto;    
   text-align: left;
-  font: 1.8vmin monospace; 
+  font: 2vmin Arial; 
 }
 #quizDialogParagraph {
   margin-top: 0;
@@ -72,7 +72,7 @@ input[type=number] {
   appearance: textfield;
 }
 #submitQuizButton {
-  font: 2.5vmin monospace; 
+  font: 2.5vmin Arial; 
 }
 #interfaceDiv {
   display: none;
@@ -89,4 +89,13 @@ input[type=number] {
   text-align: center;
   font: 10min Arial;
   padding-top: 10vh;
+}
+#completeDiv {
+  display: none;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  font: 4vw Arial;
+  margin-top: 8vh;
 }
