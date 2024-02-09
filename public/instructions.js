@@ -9,10 +9,10 @@ export function getTableText () {
   const table1 = getTable(1)
   const table2 = getTable(2)
   const tableText = `
-  If you are assigned type 1, your payoff will be given by the following table:
+  If you are assigned <span style="color:blue">type 1</span>, your payoff will be given by the following table:
   ${table1} <br>
 
-  If you are assigned type 2, your payoff will be given by the following table:
+  If you are assigned <span style="color:red">type 2</span>, your payoff will be given by the following table:
   ${table2} <br>`
   return tableText
 }

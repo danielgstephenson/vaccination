@@ -48,6 +48,10 @@ let joined = false
 let showInstructions = false
 let quizComplete = false
 let practiceComplete = false
+let randomPeriod = 0
+let randomPeriodPayoff = 0
+let showUpBonus = 0
+let earnings = 0
 let state = 'instructions'
 let stage = 'choice'
 let countdown = 0
@@ -81,6 +85,10 @@ socket.on('serverUpdateClient', msg => {
   pay0 = msg.pay0
   pay1 = msg.pay1
   payoff = msg.payoff
+  randomPeriod = msg.randomPeriod
+  randomPeriodPayoff = msg.randomPeriodPayoff
+  showUpBonus = msg.showUpBonus
+  earnings = msg.earnings
   instructionsDiv.innerHTML = getInstructions()
   setTreatment(msg.treatment)
 })
@@ -113,19 +121,19 @@ quizDialogButton.onclick = () => quizDialog.close()
 quizForm.onsubmit = (event) => {
   event.preventDefault()
   if (question1a.checked) {
-    quizDialogParagraph.innerHTML = 'Your answer to question 1 is wrong. Please correct it.'
+    quizDialogParagraph.innerHTML = 'Your answer to question 1 is incorrect. Please try again.'
     quizDialog.showModal()
   } else if (Number(question2.value) !== Number(getPayoff(1, 0, 2))) {
-    quizDialogParagraph.innerHTML = 'Your answer to question 2 is wrong. Please correct it.'
+    quizDialogParagraph.innerHTML = 'Your answer to question 2 is incorrect. Please try again.'
     quizDialog.showModal()
   } else if (Number(question3.value) !== Number(getPayoff(1, 1, 4))) {
-    quizDialogParagraph.innerHTML = 'Your answer to question 3 is wrong. Please correct it.'
+    quizDialogParagraph.innerHTML = 'Your answer to question 3 is incorrect. Please try again.'
     quizDialog.showModal()
   } else if (Number(question4.value) !== Number(getPayoff(2, 0, 6))) {
-    quizDialogParagraph.innerHTML = 'Your answer to question 4 is wrong. Please correct it.'
+    quizDialogParagraph.innerHTML = 'Your answer to question 4 is incorrect. Please try again.'
     quizDialog.showModal()
   } else if (Number(question5.value) !== Number(getPayoff(2, 1, 8))) {
-    quizDialogParagraph.innerHTML = 'Your answer to question 5 is wrong. Please correct it.'
+    quizDialogParagraph.innerHTML = 'Your answer to question 5 is incorrect. Please try again.'
     quizDialog.showModal()
   } else {
     socket.emit('quizComplete', { id })
@@ -176,8 +184,19 @@ function display () {
     interfaceDiv.style.display = 'block'
   }
   if (state === 'complete') {
+    setupCompleteDev()
     completeDiv.style.display = 'block'
   }
+}
+
+function setupCompleteDev () {
+  completeDiv.innerHTML = `
+      The experiment is now complete.<br><br>
+      Period ${randomPeriod} was randomly selected.<br>
+      Your payoff in period ${randomPeriod} was $${randomPeriodPayoff.toFixed(2)}.<br>
+      The show-up bonus is $${showUpBonus.toFixed(2)}.<br>
+      You will receive a total of $${earnings.toFixed(2)}.<br><br>
+      Please wait while your payment is prepared.`
 }
 
 function updateServer () {

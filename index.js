@@ -20,11 +20,12 @@ const subjects = {}
 const updateInterval = 0.1
 const practiceChoiceLength = 10
 const practiceFeedbackLength = 10
-const dateString = getDateString()
 const choiceLength = 5
 const feedbackLength = 5
-const nPracticePeriods = 5
-const nPaidPeriods = 30 // 60
+const nPracticePeriods = 5 // 5
+const nPaidPeriods = 60 // 60
+const showUpBonus = 5
+const dateString = getDateString()
 
 let state = 'instructions'
 let period = 0
@@ -34,6 +35,7 @@ let practice = true
 let countdown = 0
 let showInstructions = false
 let treatment = '?'
+let randomPeriod = 0
 let dataStream
 
 createDataFile()
@@ -103,11 +105,15 @@ io.on('connection', socket => {
         treatment,
         showInstructions,
         practiceComplete,
+        randomPeriod,
+        showUpBonus,
         type: subject.type,
         pay0: subject.pay0,
         pay1: subject.pay1,
         payoff: subject.payoff,
-        quizComplete: subject.quizComplete
+        quizComplete: subject.quizComplete,
+        randomPeriodPayoff: subject.randomPeriodPayoff,
+        earnings: subject.earnings
       }
       socket.emit('serverUpdateClient', reply)
     }
@@ -127,7 +133,8 @@ function createSubject (msg) {
     pay1: 0,
     payoff: 0,
     hist: {},
-    earnings: 0
+    earnings: 0,
+    randomPeriodPayoff: 0
   }
   subjects[msg.id] = subject
   console.log(`subject ${msg.id} joined`)
@@ -261,10 +268,12 @@ function updateDataFile (subject) {
 
 function writePaymentFile () {
   let csvString = 'id,payment\n'
-  const randomPeriod = choose(range(1, nPaidPeriods))
+  randomPeriod = choose(range(1, nPaidPeriods))
   console.log(`randomPeriod = ${randomPeriod}`)
   Object.values(subjects).forEach(subject => {
-    csvString += `${subject.id},${subject.hist[randomPeriod].payoff.toFixed(2)}\n`
+    subject.randomPeriodPayoff = subject.hist[randomPeriod].payoff
+    subject.earnings = showUpBonus + subject.randomPeriodPayoff
+    csvString += `${subject.id},${subject.earnings.toFixed(2)}\n`
   })
   const logErr = (err) => { if (err) { console.log(err) } }
   fs.writeFile('data/' + dateString + '-payment.csv', csvString, logErr)
