@@ -23,8 +23,8 @@ const practiceFeedbackLength = 10
 const dateString = getDateString()
 const choiceLength = 5
 const feedbackLength = 5
-const nPracticePeriods = 1
-const nPaidPeriods = 1 // 60
+const nPracticePeriods = 5
+const nPaidPeriods = 30 // 60
 
 let state = 'instructions'
 let period = 0
