@@ -1,3 +1,4 @@
+/* global Audio */
 import { io } from './socketIo/socket.io.esm.min.js'
 
 const connectingDiv = document.getElementById('connectingDiv')
@@ -10,6 +11,16 @@ const hideInstructionsButton = document.getElementById('hideInstructionsButton')
 const assignTypesButton = document.getElementById('assignTypesButton')
 const beginPracticeButton = document.getElementById('beginPracticeButton')
 const beginPaidPeriodsButton = document.getElementById('beginPaidPeriodsButton')
+
+const playInstructionsAudioButton = document.getElementById('playInstructionsAudioButton')
+const stopInstructionsAudioButton = document.getElementById('stopInstructionsAudioButton')
+const playPracticeAudioButton = document.getElementById('playPracticeAudioButton')
+const stopPracticeAudioButton = document.getElementById('stopPracticeAudioButton')
+const playPaidAudioButton = document.getElementById('playPaidAudioButton')
+const stopPaidAudioButton = document.getElementById('stopPaidAudioButton')
+const instructionsAudio = new Audio('instructions.mp3')
+const practiceAudio = new Audio('practice.mp3')
+const paidAudio = new Audio('paid.mp3')
 
 const socket = io()
 const updateInterval = 0.1
@@ -62,8 +73,22 @@ showInstructionsButton.onclick = event => {
   }
   socket.emit('showInstructions')
 }
+playInstructionsAudioButton.onclick = event => {
+  instructionsAudio.load()
+  instructionsAudio.play()
+}
+stopInstructionsAudioButton.onclick = event => {
+  instructionsAudio.pause()
+}
 hideInstructionsButton.onclick = event => {
   socket.emit('hideInstructions')
+}
+playPracticeAudioButton.onclick = event => {
+  practiceAudio.load()
+  practiceAudio.play()
+}
+stopPracticeAudioButton.onclick = event => {
+  practiceAudio.pause()
 }
 beginPracticeButton.onclick = event => {
   const allQuizComplete = Object.values(subjects).every(s => s.quizComplete)
@@ -84,6 +109,13 @@ beginPracticeButton.onclick = event => {
     return
   }
   socket.emit('beginPractice')
+}
+playPaidAudioButton.onclick = event => {
+  paidAudio.load()
+  paidAudio.play()
+}
+stopPaidAudioButton.onclick = event => {
+  paidAudio.pause()
 }
 beginPaidPeriodsButton.onclick = event => {
   const allQuizComplete = Object.values(subjects).every(s => s.quizComplete)

@@ -6,11 +6,17 @@ export const n = 10
 
 let R0 = 1.5
 let cd = { 1: 5, 2: 5 }
+let treatment = '?'
 
 export function getR0 () { return R0 }
 export function getCD () { return cd }
 
-export function setTreatment (treatment) {
+export function getTreatment () {
+  return treatment
+}
+
+export function setTreatment (newTreatment) {
+  treatment = newTreatment
   if (treatment === '1' || treatment === '2') R0 = 1.5
   if (treatment === '3' || treatment === '4') R0 = 4
   if (treatment === '1' || treatment === '3') cd = { 1: 5, 2: 5 }

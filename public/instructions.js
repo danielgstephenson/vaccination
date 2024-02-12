@@ -17,7 +17,7 @@ export function getTableText () {
   return tableText
 }
 
-export function getInstructions (quizComplete, practiceComplete) {
+export function getInstructions () {
   const instructions = welcomeText + periodInfo + getTableText()
   return instructions
 }

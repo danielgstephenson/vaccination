@@ -1,6 +1,6 @@
 import { io } from './socketIo/socket.io.esm.min.js'
 import { getInstructions } from './instructions.js'
-import { getPayoff, setTreatment, n } from './getPayoff.js'
+import { getPayoff, setTreatment, n, getTreatment } from './getPayoff.js'
 
 function range (n) { return [...Array(n).keys()] }
 
@@ -89,8 +89,10 @@ socket.on('serverUpdateClient', msg => {
   randomPeriodPayoff = msg.randomPeriodPayoff
   showUpBonus = msg.showUpBonus
   earnings = msg.earnings
-  instructionsDiv.innerHTML = getInstructions()
-  setTreatment(msg.treatment)
+  if (msg.treatment !== getTreatment()) {
+    setTreatment(msg.treatment)
+    instructionsDiv.innerHTML = getInstructions()
+  }
 })
 
 window.onmousedown = event => {
