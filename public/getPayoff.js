@@ -19,8 +19,8 @@ export function setTreatment (newTreatment) {
   treatment = newTreatment
   if (treatment === '1' || treatment === '2') R0 = 1.5
   if (treatment === '3' || treatment === '4') R0 = 4
-  if (treatment === '1' || treatment === '3') cd = { 1: 5, 2: 5 }
-  if (treatment === '2' || treatment === '4') cd = { 1: 7, 2: 3 }
+  if (treatment === '1' || treatment === '3') cd = { 1: 3, 2: 7 }
+  if (treatment === '2' || treatment === '4') cd = { 1: 5, 2: 5 }
 }
 
 export function getPayoff (type, v, totalOtherV) {

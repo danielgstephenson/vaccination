@@ -35,9 +35,9 @@ const colors = {
   grey: 'hsla(0, 0%, 75%, 1)'
 }
 const graph = {
-  bottom: -5,
+  bottom: -4,
   width: 35,
-  top: -48
+  top: -47
 }
 const maxPay = 18
 
