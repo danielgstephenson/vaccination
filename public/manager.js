@@ -177,9 +177,8 @@ function makeColumn (columnNumber, title, contentFunction) {
 }
 
 function updateInfoDiv () {
-  const numActive = Object.values(subjects).filter(s => s.active).length
   let innerHtml = ''
-  innerHtml += `numActive: ${numActive} <br>`
+  innerHtml += `subjectCount: ${Object.values(subjects).length} <br>`
   innerHtml += `typesAssigned: ${typesAssigned}<br>`
   innerHtml += `showInstructions: ${showInstructions}<br>`
   innerHtml += `practiceComplete: ${practiceComplete}<br>`
